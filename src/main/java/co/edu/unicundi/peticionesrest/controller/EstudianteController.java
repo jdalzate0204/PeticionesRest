@@ -18,12 +18,13 @@ public class EstudianteController {
     EstudianteInfo estudiante = new EstudianteInfo();
     List<EstudianteInfo> listaEstudiante;
     File archivo = new File("C:/Users/acer/Documents/NetBeansProjects/PeticionesRest/ArchivoEstudiantes.txt");
+    File archivoTemp = new File("C:/Users/acer/Documents/NetBeansProjects/PeticionesRest/Temporal.txt");
+    EstudianteMetodo em = new EstudianteMetodo();
     
     @POST
-    @Path("/agregar")
+    @Path("/agregar") 
     @Consumes(MediaType.APPLICATION_JSON)
     public Response agregar(EstudianteInfo est) throws FileNotFoundException {
-        EstudianteMetodo em = new EstudianteMetodo();
         listaEstudiante =  new ArrayList<>();
         
         if (archivo.exists() && archivo.length() > 0){
@@ -31,7 +32,7 @@ public class EstudianteController {
                 FileOutputStream file = new FileOutputStream(archivo, true);
                 MiObjectOutputStream oos = new MiObjectOutputStream(file);
 
-                em.datos(est);;
+                em.datos(est);
                 listaEstudiante.add(est);
 
                 oos.writeObject(listaEstudiante);
@@ -118,54 +119,80 @@ public class EstudianteController {
         return Response.status(Response.Status.BAD_REQUEST).build();
     }
     
-    @DELETE
-    @Path("/eliminarPorCedula/{cedula}")
+    @PUT 
+    @Path("/modificarPorCedula/{cedula}")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response editar(@PathParam("cedula") String cedula){
+    public Response modificar(@PathParam("cedula") String cedula, EstudianteInfo est){
         listaEstudiante = new ArrayList<>();
         
         try {
             FileInputStream fileIS = new FileInputStream(archivo);
             ObjectInputStream ois = new ObjectInputStream(fileIS);
-            FileOutputStream fileOS = new FileOutputStream("C:/Users/acer/Documents/NetBeansProjects/PeticionesRest/ArchivoEstudiantesT.txt");
-            ObjectOutputStream ous = new ObjectOutputStream(fileOS);
             
-            for(EstudianteInfo e : listaEstudiante){
-                listaEstudiante = (List) ois.readObject();
-                while(true){ 
-                    if(!cedula.equals(e.getCedula())){
-                       ous.writeObject(listaEstudiante);  
+            FileOutputStream fileOS = new FileOutputStream(archivoTemp);
+            ObjectOutputStream oos = new ObjectOutputStream(fileOS);
+            
+            try {
+                while(true){
+                    listaEstudiante = (List) ois.readObject();
+                    for(EstudianteInfo e : listaEstudiante){
+                        if(cedula.equals(e.getCedula())){
+                            em.datos(est);
+                            listaEstudiante.add(est);
+                            oos.writeObject(listaEstudiante); 
+                        }
                     }
                 }
+            } catch (Exception e) {
             }
             
-            return Response.status(Response.Status.NO_CONTENT).entity("Eliminado con éxito").build(); 
-            
-            /*listaEstudiante.remove(estudiante);
-            
-            List<EstudianteInfo> listaNueva =  listaEstudiante;
-            listaEstudiante = new ArrayList<>();
-            
-            file.flush();
-            
-            for (EstudianteInfo e : listaNueva) {
-                agregar(e);
-            }
-            
+            oos.close();
             ois.close();
-            file.close();
             
-            return Response.status(Response.Status.NO_CONTENT).entity("Eliminado con éxito").build(); 
-            */
-            /*for (int i = 0; i < listaEstudiante.size(); i++){
-                if(estudiante != null)
-                    return Response.status(Response.Status.OK).entity(estudiante).build();
-                else
-                    return Response.status(Response.Status.NOT_FOUND).entity("Registro no existente").build();
-            }*/
+            archivo.delete();
+            archivoTemp.renameTo(archivo);
+            
+            return Response.status(Response.Status.OK).entity(listaEstudiante).build();
             
         } catch (Exception e) {
             return Response.status(Response.Status.BAD_REQUEST).entity(e).build();
-        }   
+        } 
+    }
+    
+    @DELETE
+    @Path("/eliminarPorCedula/{cedula}")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response eliminar(@PathParam("cedula") String cedula){
+        listaEstudiante = new ArrayList<>();
+        
+        try {
+            FileInputStream fileIS = new FileInputStream(archivo);
+            ObjectInputStream ois = new ObjectInputStream(fileIS);
+            
+            FileOutputStream fileOS = new FileOutputStream(archivoTemp);
+            ObjectOutputStream oos = new ObjectOutputStream(fileOS);
+            
+            try {
+                while(true){
+                listaEstudiante = (List) ois.readObject();
+                for(EstudianteInfo e : listaEstudiante){
+                    if(!cedula.equals(e.getCedula())){
+                       oos.writeObject(listaEstudiante);
+                    }
+                }
+            } 
+            } catch (Exception e) {
+            }
+            
+            oos.close();
+            ois.close();
+            
+            archivo.delete();
+            archivoTemp.renameTo(archivo);
+            
+            return Response.status(Response.Status.NO_CONTENT).build(); 
+        } catch (Exception e) {
+            return Response.status(Response.Status.BAD_REQUEST).entity(e).build();
+        } 
     }
 }
