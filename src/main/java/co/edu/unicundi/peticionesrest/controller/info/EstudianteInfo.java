@@ -2,6 +2,7 @@ package co.edu.unicundi.peticionesrest.controller.info;
 
 import java.io.Serializable;
 import java.util.List;
+import javax.validation.constraints.*;
 
 /**
  *
@@ -9,15 +10,48 @@ import java.util.List;
  * @author Paula Alejandra Guzman Cruz
  */
 public class EstudianteInfo implements Serializable{
-    //Interface Serializable (Comprime en el disco duro para liberar memoria RAM)
     
+    /*@NotNull (message = "Por favor, ingrese la cedula")
+    @Size (min = 7, max = 10, message = "La cedula debe tener entre 7 y 10 caracteres")
+    @Pattern(regexp = "/^([0-9])*$/", message = "Cedula solo admite numeros")*/
     private String cedula;
+    
+    /*@NotNull (message = "Por favor, ingrese el nombre")
+    @Size (min = 3, max = 20, message = "El nombre debe tener entre 3 y 20 caracteres")
+    @Pattern(regexp = "/^[a-zA-Z]*$/", message = "Nombre solo admite letras")*/
     private String nombre;
+    
+    /*@NotNull (message = "Por favor, ingrese el apellido")
+    @Size (min = 3, max = 20, message = "El apellido debe tener entre 3 y 20 caracteres")
+    @Pattern(regexp = "/^[a-zA-Z]*$/", message = "Apellido solo admite letras")*/
     private String apellido;
+    
+    /*@NotNull (message = "Porfavor, ingrese la edad")
+    @Min (18)
+    @Max (99)
+    @Size (max = 2, message = "La edad no debe superar los 2 caracteres")
+    @Pattern(regexp = "/^([0-9])*$/", message = "Edad solo admite numeros")*/
     private Integer edad;
+    
+    /*@NotNull (message = "Porfavor, ingrese el correo")
+    @Pattern (regexp = "^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$", message = "Ingrese un formato de correo valido")*/
     private String correo;
+    
+    /*@NotNull (message = "Porfavor, ingrese el semestre en numero")
+    @Min (1)
+    @Max (10)
+    @Size (max = 2, message = "El semestre no debe superar los 2 caracteres")
+    @Pattern(regexp = "/^([0-9])*$/", message = "Semestre solo admite numeros")*/
     private int semestre;
+    
+    /*@NotNull (message = "Porfavor, ingrese las materias")
+    @Max (5)*/
     private List<String> listaMaterias;
+    
+    /*@NotNull (message = "Porfavor, ingrese los numeros")
+    @Min (2)
+    @Max (7)
+    @Pattern(regexp = "/^([0-9])*$/", message = "El vector numeros solo admite numeros")*/
     private int[] numeros;
 
     public EstudianteInfo() {

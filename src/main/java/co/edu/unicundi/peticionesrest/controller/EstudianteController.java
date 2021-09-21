@@ -4,6 +4,7 @@ import co.edu.unicundi.peticionesrest.controller.info.*;
 import java.io.*;
 import java.util.*;
 import javax.ejb.Stateless;
+import javax.validation.Valid;
 import javax.ws.rs.*;
 import javax.ws.rs.core.*; 
 
@@ -19,15 +20,15 @@ public class EstudianteController {
     List<EstudianteInfo> listaEstudiante;
     File archivo = new File("C:/Users/acer/Documents/NetBeansProjects/PeticionesRest/ArchivoEstudiantes.txt");
     File archivoTemp = new File("C:/Users/acer/Documents/NetBeansProjects/PeticionesRest/Temporal.txt");
-    EstudianteMetodo em = new EstudianteMetodo();
+    EstudianteMetodo em = new EstudianteMetodo(); 
     
     @POST
     @Path("/agregar") 
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response agregar(EstudianteInfo est) throws FileNotFoundException {
+    public Response agregar(@Valid EstudianteInfo est) throws FileNotFoundException {
         listaEstudiante =  new ArrayList<>();
         
-        if (archivo.exists() && archivo.length() > 0){
+        if (archivo.exists() && archivo.length() > 0) {
             try {
                 FileOutputStream file = new FileOutputStream(archivo, true);
                 MiObjectOutputStream oos = new MiObjectOutputStream(file);
@@ -43,7 +44,7 @@ public class EstudianteController {
             } catch (IOException e) {
                 return Response.status(Response.Status.BAD_REQUEST).entity(e).build();
             }
-        } else{
+        } else {
             try {
                 FileOutputStream file = new FileOutputStream(archivo, true);
                 ObjectOutputStream oos = new ObjectOutputStream(file);
@@ -68,26 +69,30 @@ public class EstudianteController {
     public Response mostrar(){
         listaEstudiante = new ArrayList<>();
         
-        try {
-            FileInputStream file = new FileInputStream(archivo);
-            ObjectInputStream ois = new ObjectInputStream(file);
-            
+        if (archivo.exists()) {
             try {
-                while(true){
-                    listaEstudiante = (List) ois.readObject();
-                    for (EstudianteInfo e : listaEstudiante){
-                        estudiante = e;
-                    }
-                    return Response.status(Response.Status.OK).entity(estudiante).build();
-                }
-            } catch (IOException | ClassNotFoundException e) {
-            }
+                FileInputStream file = new FileInputStream(archivo);
+                ObjectInputStream ois = new ObjectInputStream(file);
             
-            ois.close();
-            file.close();
-        } catch (IOException e) {
-            return Response.status(Response.Status.BAD_REQUEST).entity(e).build();
-        }
+                try {
+                    while (true) {
+                        listaEstudiante = (List) ois.readObject();
+                        for (EstudianteInfo e : listaEstudiante){
+                            estudiante = e;
+                        }
+                        return Response.status(Response.Status.OK).entity(estudiante).build();
+                    }
+                } catch (IOException | ClassNotFoundException e) {
+                }
+            
+                ois.close();
+                file.close();
+            } catch (IOException e) {
+                return Response.status(Response.Status.BAD_REQUEST).entity(e).build();
+            }
+        } else
+            return Response.status(Response.Status.NOT_FOUND).entity("Archivo no encontrado").build();
+        
         return Response.status(Response.Status.BAD_REQUEST).build();
     }
     
@@ -98,32 +103,34 @@ public class EstudianteController {
         estudiante = null; 
         listaEstudiante = new ArrayList<>();
         
-        try {
-            FileInputStream file = new FileInputStream(archivo);
-            ObjectInputStream ois = new ObjectInputStream(file);
-            
+        if (archivo.exists()) {
             try {
-                while(true){
-                    listaEstudiante = (List) ois.readObject();
-                    for(EstudianteInfo e : listaEstudiante){
-                        if(cedula.equals(e.getCedula())){
-                            estudiante = e;
-                        }
-                    }
-                    
-                }
-            }catch (IOException | ClassNotFoundException e) {
-            }
-            ois.close();
-            file.close();
+                FileInputStream file = new FileInputStream(archivo);
+                ObjectInputStream ois = new ObjectInputStream(file);
             
-            if(estudiante != null)
-                return Response.status(Response.Status.OK).entity(estudiante).build();
-            else
-                return Response.status(Response.Status.NOT_FOUND).entity("Registro no existente").build();
-        } catch (IOException e) {
-            return Response.status(Response.Status.BAD_REQUEST).entity(e).build();
-        }
+                try {
+                    while (true) {
+                        listaEstudiante = (List) ois.readObject();
+                        for(EstudianteInfo e : listaEstudiante){
+                            if(cedula.equals(e.getCedula())){
+                                estudiante = e;
+                            }
+                        } 
+                    }
+                } catch (IOException | ClassNotFoundException e) {
+                }
+                ois.close();
+                file.close();
+            
+                if (estudiante != null)
+                    return Response.status(Response.Status.OK).entity(estudiante).build();
+                else
+                    return Response.status(Response.Status.NOT_FOUND).entity("Registro no existente").build();
+            } catch (IOException e) {
+                return Response.status(Response.Status.BAD_REQUEST).entity(e).build();
+            }
+        } else
+            return Response.status(Response.Status.NOT_FOUND).entity("Archivo no encontrado").build();
     }
     
     @PUT 
@@ -133,38 +140,41 @@ public class EstudianteController {
         listaEstudiante = new ArrayList<>();
         List<EstudianteInfo> lista = new ArrayList<>();
         
-        try {
-            FileInputStream fileIS = new FileInputStream(archivo);
-            ObjectInputStream ois = new ObjectInputStream(fileIS);
-            
-            FileOutputStream fileOS = new FileOutputStream(archivoTemp);
-            ObjectOutputStream oos = new ObjectOutputStream(fileOS);
-            
+        if (archivo.exists()) {
             try {
-                while(true){
-                    listaEstudiante = (List) ois.readObject();
-                    for(EstudianteInfo e : listaEstudiante){
-                        if(cedula.equals(e.getCedula())){
-                            em.datos(est);
-                            lista.add(est);
-                            oos.writeObject(lista); 
+                FileInputStream fileIS = new FileInputStream(archivo);
+                ObjectInputStream ois = new ObjectInputStream(fileIS);
+            
+                FileOutputStream fileOS = new FileOutputStream(archivoTemp);
+                ObjectOutputStream oos = new ObjectOutputStream(fileOS);
+            
+                try {
+                    while (true) {
+                        listaEstudiante = (List) ois.readObject();
+                        for (EstudianteInfo e : listaEstudiante) {
+                            if (cedula.equals(e.getCedula())) {
+                                em.datos(est);
+                                lista.add(est);
+                                oos.writeObject(lista); 
+                            }
+                            if (!cedula.equals(e.getCedula()))
+                                oos.writeObject(listaEstudiante);
                         }
-                        if(!cedula.equals(e.getCedula()))
-                            oos.writeObject(listaEstudiante);
                     }
+                } catch (IOException | ClassNotFoundException e) {
                 }
-            } catch (IOException | ClassNotFoundException e) {
-            }
-            oos.close();
-            ois.close();
+                oos.close();
+                ois.close();
             
-            archivo.delete();
-            archivoTemp.renameTo(archivo);
+                archivo.delete();
+                archivoTemp.renameTo(archivo);
             
-            return Response.status(Response.Status.OK).entity("Registro Modificado Exitosamente").build();
-        } catch (IOException e) {
-            return Response.status(Response.Status.BAD_REQUEST).entity(e).build();
-        } 
+                return Response.status(Response.Status.OK).entity("Registro Modificado Exitosamente").build();
+            } catch (IOException e) {
+                return Response.status(Response.Status.BAD_REQUEST).entity(e).build();
+            } 
+        } else
+            return Response.status(Response.Status.NOT_FOUND).entity("Archivo no encontrado").build();
     }
     
     @DELETE
@@ -173,34 +183,36 @@ public class EstudianteController {
     public Response eliminar(@PathParam("cedula") String cedula){
         listaEstudiante = new ArrayList<>();
         
-        try {
-            FileInputStream fileIS = new FileInputStream(archivo);
-            ObjectInputStream ois = new ObjectInputStream(fileIS);
-            
-            FileOutputStream fileOS = new FileOutputStream(archivoTemp);
-            ObjectOutputStream oos = new ObjectOutputStream(fileOS);
-            
+        if (archivo.exists()) {
             try {
-                while(true){
-                listaEstudiante = (List) ois.readObject();
-                for(EstudianteInfo e : listaEstudiante){
-                    if(!cedula.equals(e.getCedula())){
-                       oos.writeObject(listaEstudiante);
-                    }
+                FileInputStream fileIS = new FileInputStream(archivo);
+                ObjectInputStream ois = new ObjectInputStream(fileIS);
+            
+                FileOutputStream fileOS = new FileOutputStream(archivoTemp);
+                ObjectOutputStream oos = new ObjectOutputStream(fileOS);
+            
+                try {
+                    while (true) {
+                        listaEstudiante = (List) ois.readObject();
+                        for (EstudianteInfo e : listaEstudiante) {
+                            if (!cedula.equals(e.getCedula()))
+                                oos.writeObject(listaEstudiante);
+                        }
+                    } 
+                } catch (IOException | ClassNotFoundException e) {
                 }
+            
+                oos.close();
+                ois.close();
+            
+                archivo.delete();
+                archivoTemp.renameTo(archivo);
+            
+                return Response.status(Response.Status.NO_CONTENT).build(); 
+            } catch (IOException e) {
+                return Response.status(Response.Status.BAD_REQUEST).entity(e).build();
             } 
-            } catch (IOException | ClassNotFoundException e) {
-            }
-            
-            oos.close();
-            ois.close();
-            
-            archivo.delete();
-            archivoTemp.renameTo(archivo);
-            
-            return Response.status(Response.Status.NO_CONTENT).build(); 
-        } catch (IOException e) {
-            return Response.status(Response.Status.BAD_REQUEST).entity(e).build();
-        } 
+        } else
+            return Response.status(Response.Status.NOT_FOUND).entity("Archivo no encontrado").build();
     }
 }
