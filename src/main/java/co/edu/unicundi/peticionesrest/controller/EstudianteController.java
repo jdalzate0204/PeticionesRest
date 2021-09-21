@@ -72,36 +72,50 @@ public class EstudianteController {
             FileInputStream file = new FileInputStream(archivo);
             ObjectInputStream ois = new ObjectInputStream(file);
             
-            listaEstudiante = (List) ois.readObject();
+            try {
+                while(true){
+                    listaEstudiante = (List) ois.readObject();
+                    for (EstudianteInfo e : listaEstudiante){
+                        return Response.status(Response.Status.OK).entity(e).build();
+                    }
+                    for (int i = 0; i < listaEstudiante.size(); i++){
+                        return Response.status(Response.Status.OK).entity(listaEstudiante.get(i)).build();
+            }
+                }
+            } catch (Exception e) {
+            }
+            
             ois.close();
             file.close();
-            
-            for (int i = 0; i < listaEstudiante.size(); i++){
-                return Response.status(Response.Status.OK).entity(listaEstudiante.get(i)).build();
-            }
         } catch (Exception e) {
             return Response.status(Response.Status.BAD_REQUEST).entity(e).build();
         }
         return Response.status(Response.Status.BAD_REQUEST).build();
     }
     
+    
+    
     @GET
     @Path("/mostrarPorCedula/{cedula}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response mostrarPorCedula(@PathParam("cedula") String cedula){
-        estudiante = null; 
+       estudiante = null; 
         listaEstudiante = new ArrayList<>();
         
         try {
             FileInputStream file = new FileInputStream(archivo);
             ObjectInputStream ois = new ObjectInputStream(file);
             
-            listaEstudiante = (List) ois.readObject();
-            
-            for(EstudianteInfo e : listaEstudiante){
-                if(cedula.equals(e.getCedula())){
-                    estudiante = e;
+            try {
+                while(true){
+                    listaEstudiante = (List) ois.readObject();
+                    for(EstudianteInfo e : listaEstudiante){
+                        if(cedula.equals(e.getCedula())){
+                            estudiante = e;
+                        }
+                    }
                 }
+            }catch (Exception e) {
             }
             
             ois.close();
