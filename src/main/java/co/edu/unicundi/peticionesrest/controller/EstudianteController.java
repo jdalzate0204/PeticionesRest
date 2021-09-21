@@ -40,7 +40,7 @@ public class EstudianteController {
                 file.close();
 
                 return Response.status(Response.Status.CREATED).entity("Registrado Exitosamente").build();             
-            } catch (Exception e) {
+            } catch (IOException e) {
                 return Response.status(Response.Status.BAD_REQUEST).entity(e).build();
             }
         } else{
@@ -56,7 +56,7 @@ public class EstudianteController {
                 file.close();
 
                 return Response.status(Response.Status.CREATED).entity("Registrado Exitosamente").build();
-            } catch (Exception e) {
+            } catch (IOException e) {
                 return Response.status(Response.Status.BAD_REQUEST).entity(e).build();
             }
         }
@@ -76,30 +76,26 @@ public class EstudianteController {
                 while(true){
                     listaEstudiante = (List) ois.readObject();
                     for (EstudianteInfo e : listaEstudiante){
-                        return Response.status(Response.Status.OK).entity(e).build();
+                        estudiante = e;
                     }
-                    for (int i = 0; i < listaEstudiante.size(); i++){
-                        return Response.status(Response.Status.OK).entity(listaEstudiante.get(i)).build();
-            }
+                    return Response.status(Response.Status.OK).entity(estudiante).build();
                 }
-            } catch (Exception e) {
+            } catch (IOException | ClassNotFoundException e) {
             }
             
             ois.close();
             file.close();
-        } catch (Exception e) {
+        } catch (IOException e) {
             return Response.status(Response.Status.BAD_REQUEST).entity(e).build();
         }
         return Response.status(Response.Status.BAD_REQUEST).build();
     }
     
-    
-    
     @GET
     @Path("/mostrarPorCedula/{cedula}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response mostrarPorCedula(@PathParam("cedula") String cedula){
-       estudiante = null; 
+        estudiante = null; 
         listaEstudiante = new ArrayList<>();
         
         try {
@@ -114,23 +110,20 @@ public class EstudianteController {
                             estudiante = e;
                         }
                     }
+                    
                 }
-            }catch (Exception e) {
+            }catch (IOException | ClassNotFoundException e) {
             }
-            
             ois.close();
             file.close();
             
-            for (int i = 0; i < listaEstudiante.size(); i++){
-                if(estudiante != null)
-                    return Response.status(Response.Status.OK).entity(estudiante).build();
-                else
-                    return Response.status(Response.Status.NOT_FOUND).entity("Registro no existente").build();
-            }
-        } catch (Exception e) {
+            if(estudiante != null)
+                return Response.status(Response.Status.OK).entity(estudiante).build();
+            else
+                return Response.status(Response.Status.NOT_FOUND).entity("Registro no existente").build();
+        } catch (IOException e) {
             return Response.status(Response.Status.BAD_REQUEST).entity(e).build();
         }
-        return Response.status(Response.Status.BAD_REQUEST).build();
     }
     
     @PUT 
@@ -138,6 +131,7 @@ public class EstudianteController {
     @Consumes(MediaType.APPLICATION_JSON)
     public Response modificar(@PathParam("cedula") String cedula, EstudianteInfo est){
         listaEstudiante = new ArrayList<>();
+        List<EstudianteInfo> lista = new ArrayList<>();
         
         try {
             FileInputStream fileIS = new FileInputStream(archivo);
@@ -152,23 +146,23 @@ public class EstudianteController {
                     for(EstudianteInfo e : listaEstudiante){
                         if(cedula.equals(e.getCedula())){
                             em.datos(est);
-                            listaEstudiante.add(est);
-                            oos.writeObject(listaEstudiante); 
+                            lista.add(est);
+                            oos.writeObject(lista); 
                         }
+                        if(!cedula.equals(e.getCedula()))
+                            oos.writeObject(listaEstudiante);
                     }
                 }
-            } catch (Exception e) {
+            } catch (IOException | ClassNotFoundException e) {
             }
-            
             oos.close();
             ois.close();
             
             archivo.delete();
             archivoTemp.renameTo(archivo);
             
-            return Response.status(Response.Status.OK).entity(listaEstudiante).build();
-            
-        } catch (Exception e) {
+            return Response.status(Response.Status.OK).entity("Registro Modificado Exitosamente").build();
+        } catch (IOException e) {
             return Response.status(Response.Status.BAD_REQUEST).entity(e).build();
         } 
     }
@@ -195,7 +189,7 @@ public class EstudianteController {
                     }
                 }
             } 
-            } catch (Exception e) {
+            } catch (IOException | ClassNotFoundException e) {
             }
             
             oos.close();
@@ -205,7 +199,7 @@ public class EstudianteController {
             archivoTemp.renameTo(archivo);
             
             return Response.status(Response.Status.NO_CONTENT).build(); 
-        } catch (Exception e) {
+        } catch (IOException e) {
             return Response.status(Response.Status.BAD_REQUEST).entity(e).build();
         } 
     }
