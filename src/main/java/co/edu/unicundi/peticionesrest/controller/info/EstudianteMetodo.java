@@ -1,7 +1,5 @@
 package co.edu.unicundi.peticionesrest.controller.info;
 
-import java.io.File;
-
 /**
  *
  * @author James Daniel Alzate Rios

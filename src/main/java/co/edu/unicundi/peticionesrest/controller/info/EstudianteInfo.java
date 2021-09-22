@@ -11,9 +11,9 @@ import javax.validation.constraints.*;
  */
 public class EstudianteInfo implements Serializable{
     
-    /*@NotNull (message = "Por favor, ingrese la cedula")
-    @Size (min = 7, max = 10, message = "La cedula debe tener entre 7 y 10 caracteres")
-    @Pattern(regexp = "/^([0-9])*$/", message = "Cedula solo admite numeros")*/
+    /*@NotNull
+    @Size (min = 7, max = 10)
+    @Pattern(regexp = "/^([0-9])*$/")*/
     private String cedula;
     
     /*@NotNull (message = "Por favor, ingrese el nombre")

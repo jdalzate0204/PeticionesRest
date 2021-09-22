@@ -4,7 +4,6 @@ import co.edu.unicundi.peticionesrest.controller.info.*;
 import java.io.*;
 import java.util.*;
 import javax.ejb.Stateless;
-import javax.validation.Valid;
 import javax.ws.rs.*;
 import javax.ws.rs.core.*; 
 
@@ -15,7 +14,7 @@ import javax.ws.rs.core.*;
  */
 @Stateless
 @Path("/estudiantes")
-public class EstudianteController {
+public class EstudianteController { 
     EstudianteInfo estudiante = new EstudianteInfo();
     List<EstudianteInfo> listaEstudiante;
     File archivo = new File("C:/Users/acer/Documents/NetBeansProjects/PeticionesRest/ArchivoEstudiantes.txt");
@@ -25,7 +24,7 @@ public class EstudianteController {
     @POST
     @Path("/agregar") 
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response agregar(@Valid EstudianteInfo est) throws FileNotFoundException {
+    public Response agregar(EstudianteInfo est) {
         listaEstudiante =  new ArrayList<>();
         
         if (archivo.exists() && archivo.length() > 0) {
@@ -42,11 +41,12 @@ public class EstudianteController {
 
                 return Response.status(Response.Status.CREATED).entity("Registrado Exitosamente").build();             
             } catch (IOException e) {
-                return Response.status(Response.Status.BAD_REQUEST).entity(e).build();
+                e.printStackTrace();
+                return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
             }
         } else {
             try {
-                FileOutputStream file = new FileOutputStream(archivo, true);
+                FileOutputStream file = new FileOutputStream(archivo);
                 ObjectOutputStream oos = new ObjectOutputStream(file);
 
                 em.datos(est);
@@ -58,7 +58,8 @@ public class EstudianteController {
 
                 return Response.status(Response.Status.CREATED).entity("Registrado Exitosamente").build();
             } catch (IOException e) {
-                return Response.status(Response.Status.BAD_REQUEST).entity(e).build();
+                e.printStackTrace();
+                return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
             }
         }
     }
@@ -75,25 +76,21 @@ public class EstudianteController {
                 ObjectInputStream ois = new ObjectInputStream(file);
             
                 try {
-                    while (true) {
-                        listaEstudiante = (List) ois.readObject();
-                        for (EstudianteInfo e : listaEstudiante){
-                            estudiante = e;
-                        }
-                        return Response.status(Response.Status.OK).entity(estudiante).build();
-                    }
+                    while (true)
+                        listaEstudiante.addAll((List) ois.readObject());
                 } catch (IOException | ClassNotFoundException e) {
+                    e.printStackTrace();
+                    
+                    ois.close();
+                    file.close();
+                    return Response.status(Response.Status.OK).entity(listaEstudiante).build();
                 }
-            
-                ois.close();
-                file.close();
             } catch (IOException e) {
-                return Response.status(Response.Status.BAD_REQUEST).entity(e).build();
+                e.printStackTrace();
+                return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
             }
         } else
             return Response.status(Response.Status.NOT_FOUND).entity("Archivo no encontrado").build();
-        
-        return Response.status(Response.Status.BAD_REQUEST).build();
     }
     
     @GET
@@ -118,16 +115,19 @@ public class EstudianteController {
                         } 
                     }
                 } catch (IOException | ClassNotFoundException e) {
-                }
-                ois.close();
-                file.close();
-            
-                if (estudiante != null)
-                    return Response.status(Response.Status.OK).entity(estudiante).build();
-                else
-                    return Response.status(Response.Status.NOT_FOUND).entity("Registro no existente").build();
+                    e.printStackTrace();
+                    
+                    ois.close();
+                    file.close();
+                    
+                    if (estudiante != null)
+                        return Response.status(Response.Status.OK).entity(estudiante).build();
+                    else
+                        return Response.status(Response.Status.NOT_FOUND).entity("Registro no existente").build();
+                }           
             } catch (IOException e) {
-                return Response.status(Response.Status.BAD_REQUEST).entity(e).build();
+                e.printStackTrace();
+                return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
             }
         } else
             return Response.status(Response.Status.NOT_FOUND).entity("Archivo no encontrado").build();
@@ -162,17 +162,20 @@ public class EstudianteController {
                         }
                     }
                 } catch (IOException | ClassNotFoundException e) {
+                    e.printStackTrace();
+                    
+                    oos.close();
+                    ois.close();
+                    
+                    archivo.delete();
+                    archivoTemp.renameTo(archivo);
+            
+                    return Response.status(Response.Status.OK).entity("Registro Modificado Exitosamente").build();
                 }
-                oos.close();
-                ois.close();
-            
-                archivo.delete();
-                archivoTemp.renameTo(archivo);
-            
-                return Response.status(Response.Status.OK).entity("Registro Modificado Exitosamente").build();
             } catch (IOException e) {
-                return Response.status(Response.Status.BAD_REQUEST).entity(e).build();
-            } 
+                e.printStackTrace();
+                return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+            }
         } else
             return Response.status(Response.Status.NOT_FOUND).entity("Archivo no encontrado").build();
     }
@@ -200,17 +203,19 @@ public class EstudianteController {
                         }
                     } 
                 } catch (IOException | ClassNotFoundException e) {
+                    e.printStackTrace();
+                    
+                    oos.close();
+                    ois.close();
+            
+                    archivo.delete();
+                    archivoTemp.renameTo(archivo);
+            
+                    return Response.status(Response.Status.NO_CONTENT).build(); 
                 }
-            
-                oos.close();
-                ois.close();
-            
-                archivo.delete();
-                archivoTemp.renameTo(archivo);
-            
-                return Response.status(Response.Status.NO_CONTENT).build(); 
             } catch (IOException e) {
-                return Response.status(Response.Status.BAD_REQUEST).entity(e).build();
+                e.printStackTrace();
+                return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
             } 
         } else
             return Response.status(Response.Status.NOT_FOUND).entity("Archivo no encontrado").build();
