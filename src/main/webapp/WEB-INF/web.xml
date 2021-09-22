@@ -14,6 +14,37 @@
         <servlet-name>javax.ws.rs.core.Application</servlet-name>
         <load-on-startup>1</load-on-startup>
     </servlet>
+    
+    <servlet>
+        <servlet-name>JerseyTest</servlet-name>
+        <servlet-class>com.sun.jersey.spi.container.servlet.ServletContainer</servlet-class>
+        <init-param>
+            <param-name>com.sun.jersey.api.json.POJOMappingFeature</param-name>
+            <param-value>true</param-value>
+        </init-param>
+        <init-param>
+            <param-name>com.sun.jersey.config.property.resourceConfigClass</param-name>
+            <param-value>com.sun.jersey.api.core.PackagesResourceConfig</param-value>
+        </init-param>
+        <init-param>
+            <param-name>com.sun.jersey.config.property.packages</param-name>
+            <param-value>co.edu.unicundi.peticionesrest.controller;com.wordnik.swagger.jaxrs</param-value>
+        </init-param>
+        <init-param>
+            <param-name>swagger.api.basepath</param-name>
+            <param-value>http://localhost:8080/PeticionesRest</param-value>
+        </init-param>
+        <init-param>
+            <param-name>api.version</param-name>
+            <param-value>1.0</param-value>
+        </init-param>
+    </servlet>
+    
+    <!--<servlet-mapping>
+        <servlet-name>JerseyTest</servlet-name>
+        <url-pattern>/*</url-pattern>
+    </servlet-mapping>-->
+    
     <servlet-mapping>
         <servlet-name>javax.ws.rs.core.Application</servlet-name>
         <url-pattern>/api/*</url-pattern>

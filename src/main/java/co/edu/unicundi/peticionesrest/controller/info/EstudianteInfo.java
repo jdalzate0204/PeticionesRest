@@ -13,17 +13,14 @@ import org.hibernate.validator.constraints.Range;
  */
 public class EstudianteInfo implements Serializable {
     
-    //@NotNull (message = "¡Se requiere la cedula!")
     @Size (min = 7, max = 10, message = "¡Debe tener un tamaño entre 7 y 10 caracteres!")
     @Pattern(regexp = "^\\d+$", message = "¡Solo se admiten numeros!")
     private String cedula;
     
-    //@NotBlank (message = "¡Se requiere el nombre!")
     @Size (min = 3, max = 20, message = "¡Debe tener un tamaño entre 3 y 20 caracteres!")
     @Pattern(regexp = "^[a-zA-Z_]+( [a-zA-Z_]+)*$", message = "¡Solo se admiten letras!")
     private String nombre;
     
-    //@NotBlank (message = "¡Se requiere la apellido!")
     @Size (min = 3, max = 20, message = "¡Debe tener un tamaño entre 3 y 20 caracteres!")
     @Pattern(regexp = "^[a-zA-Z_]+( [a-zA-Z_]+)*$", message = "¡Solo se admiten letras!")
     private String apellido;
@@ -31,14 +28,12 @@ public class EstudianteInfo implements Serializable {
     @Range (min = 18, max = 99, message = "¡Debe estar en el rango entre 18 y 99 años!")
     private Integer edad;
     
-    //@NotBlank (message = "¡Se requiere el correo!")
     @Pattern (regexp = "^[^@]+@[^@]+\\.[a-zA-Z]{2,}$", message = "¡Ingrese un formato valido!")
     private String correo;
     
     @Range (min = 1, max = 10, message = "¡Debe estar en el rango entre 1 y 10!")
     private Integer semestre;
     
-    //No nulo (Validación personalizada)
     @Size(min = 1, max = 5, message = "¡Debe ingresar entre 1 y 5 materias!")
     private List<String> listaMaterias;
     
@@ -113,7 +108,7 @@ public class EstudianteInfo implements Serializable {
         this.numeros = numeros;
     }
 
-    //Envia la intancia para validar si tiene alguna violación 
+    //Metodo que envia la intancia para validar si tiene alguna violación 
     public Set<ConstraintViolation<EstudianteInfo>> validar(){
         ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
         Validator validator = factory.getValidator();

@@ -1,6 +1,8 @@
 package co.edu.unicundi.peticionesrest.controller;
 
 import co.edu.unicundi.peticionesrest.controller.info.*;
+import com.wordnik.swagger.annotations.*;
+import com.wordnik.swagger.jaxrs.JavaHelp;
 import java.io.*;
 import java.util.*;
 import javax.ejb.Stateless;
@@ -15,7 +17,8 @@ import javax.ws.rs.core.*;
  */
 @Stateless
 @Path("/estudiantes")
-public class EstudianteController { 
+@Api(value = "/estudiantes", description = "Operaciones con estudiantes")
+public class EstudianteController extends JavaHelp { 
     EstudianteInfo estudiante = new EstudianteInfo();
     List<EstudianteInfo> listaEstudiante;
     File archivo = new File("C:/Users/acer/Documents/NetBeansProjects/PeticionesRest/ArchivoEstudiantes.txt");
@@ -24,8 +27,13 @@ public class EstudianteController {
     
     @POST
     @Path("/agregar")
+    @ApiOperation(
+            value = "Registra los estudiantes",
+            notes = "Recibe los paremtros de:\n- cedula\n- nombre\n- apellido\n- edad\n- correo\n- semestre\n- listaMaterias (ArrayList)\n"
+                    + "- numeros (vector)\nTodos los atributos se encuentran validados")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response agregar(EstudianteInfo est) {
+    public Response agregar(@ApiParam(value = "Datos para el registro", required = true) 
+                               EstudianteInfo est) {
         listaEstudiante =  new ArrayList<>();
         
         if (archivo.exists() && archivo.length() > 0) {
@@ -85,6 +93,9 @@ public class EstudianteController {
     
     @GET
     @Path("/mostrar")
+    @ApiOperation(
+            value = "Lista todos los estudiantes registrados",
+            notes = "Devuelve el registro de todos los estudiantes con sus atributos")
     @Produces(MediaType.APPLICATION_JSON)
     public Response mostrar(){
         listaEstudiante = new ArrayList<>();
@@ -114,8 +125,13 @@ public class EstudianteController {
     
     @GET
     @Path("/mostrarPorCedula/{cedula : \\d+}")
+    @ApiOperation(
+            value = "Lista un estudiante en especifico",
+            notes = "Recibe por la URL el parametro de cedula y devuelve el registro correspondiente")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response mostrarPorCedula(@PathParam("cedula") String cedula){
+    public Response mostrarPorCedula(@ApiParam(value = "Cedula del estudiante a buscar", required = true)
+                                         @PathParam("cedula") 
+                                         String cedula) {
         estudiante = null; 
         listaEstudiante = new ArrayList<>();
         
@@ -154,8 +170,13 @@ public class EstudianteController {
     
     @PUT 
     @Path("/modificarPorCedula/{cedula : \\d+}")
+    @ApiOperation(
+            value = "Modifica algun dato de un estudiante en especifico",
+            notes = "Recibe por la URL el parametro de cedula del registro a modificar")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response modificar(@PathParam("cedula") String cedula, EstudianteInfo est){
+    public Response modificar(@ApiParam(value = "Cedula del estudiante a buscar", required = true)
+                                @PathParam("cedula") String cedula, 
+                                EstudianteInfo est){
         listaEstudiante = new ArrayList<>();
         List<EstudianteInfo> lista = new ArrayList<>();
         
@@ -210,8 +231,12 @@ public class EstudianteController {
     
     @DELETE
     @Path("/eliminarPorCedula/{cedula : \\d+}")
+    @ApiOperation(
+            value = "Elimina el regitro de un estudiante en especifico",
+            notes = "Recibe por la URL el parametro de cedula del registro a eliminar")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response eliminar(@PathParam("cedula") String cedula){
+    public Response eliminar(@ApiParam(value = "Cedula del estudiante a buscar", required = true)
+                                @PathParam("cedula") String cedula){
         listaEstudiante = new ArrayList<>();
         
         if (archivo.exists()) {
