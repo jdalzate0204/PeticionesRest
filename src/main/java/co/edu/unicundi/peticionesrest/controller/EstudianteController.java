@@ -4,6 +4,7 @@ import co.edu.unicundi.peticionesrest.controller.info.*;
 import java.io.*;
 import java.util.*;
 import javax.ejb.Stateless;
+import javax.validation.ConstraintViolation;
 import javax.ws.rs.*;
 import javax.ws.rs.core.*; 
 
@@ -22,41 +23,59 @@ public class EstudianteController {
     EstudianteMetodo em = new EstudianteMetodo(); 
     
     @POST
-    @Path("/agregar") 
+    @Path("/agregar")
     @Consumes(MediaType.APPLICATION_JSON)
     public Response agregar(EstudianteInfo est) {
         listaEstudiante =  new ArrayList<>();
         
         if (archivo.exists() && archivo.length() > 0) {
             try {
-                FileOutputStream file = new FileOutputStream(archivo, true);
-                MiObjectOutputStream oos = new MiObjectOutputStream(file);
+                HashMap<String, String> errores = new HashMap();
+                
+                for (ConstraintViolation error: est.validar())
+                    errores.put(error.getPropertyPath().toString(), error.getMessage());
+                
+                if (errores.size() > 0)
+                    return Response.status(Response.Status.BAD_REQUEST).entity(errores).build();
+                else {
+                    FileOutputStream file = new FileOutputStream(archivo, true);
+                    MiObjectOutputStream oos = new MiObjectOutputStream(file);
+                
+                    em.datos(est);
+                    listaEstudiante.add(est);
 
-                em.datos(est);
-                listaEstudiante.add(est);
+                    oos.writeObject(listaEstudiante);
+                    oos.close();
+                    file.close();
 
-                oos.writeObject(listaEstudiante);
-                oos.close();
-                file.close();
-
-                return Response.status(Response.Status.CREATED).entity("Registrado Exitosamente").build();             
+                    return Response.status(Response.Status.CREATED).entity(est.getNombre() + " Registrado Exitosamente").build();
+                }      
             } catch (IOException e) {
                 e.printStackTrace();
                 return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
             }
         } else {
             try {
-                FileOutputStream file = new FileOutputStream(archivo);
-                ObjectOutputStream oos = new ObjectOutputStream(file);
+                HashMap<String, String> errores = new HashMap();
+                
+                for (ConstraintViolation error: est.validar())
+                    errores.put(error.getPropertyPath().toString(), error.getMessage());
+                
+                if (errores.size() > 0)
+                    return Response.status(Response.Status.BAD_REQUEST).entity(errores).build();
+                else {
+                    FileOutputStream file = new FileOutputStream(archivo);
+                    ObjectOutputStream oos = new ObjectOutputStream(file);
 
-                em.datos(est);
-                listaEstudiante.add(est);
+                    em.datos(est);
+                    listaEstudiante.add(est);
 
-                oos.writeObject(listaEstudiante);
-                oos.close();
-                file.close();
+                    oos.writeObject(listaEstudiante);
+                    oos.close();
+                    file.close();
 
-                return Response.status(Response.Status.CREATED).entity("Registrado Exitosamente").build();
+                    return Response.status(Response.Status.CREATED).entity(est.getNombre() + " Registrado Exitosamente").build();
+                }
             } catch (IOException e) {
                 e.printStackTrace();
                 return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
@@ -94,7 +113,7 @@ public class EstudianteController {
     }
     
     @GET
-    @Path("/mostrarPorCedula/{cedula}")
+    @Path("/mostrarPorCedula/{cedula : \\d+}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response mostrarPorCedula(@PathParam("cedula") String cedula){
         estudiante = null; 
@@ -134,7 +153,7 @@ public class EstudianteController {
     }
     
     @PUT 
-    @Path("/modificarPorCedula/{cedula}")
+    @Path("/modificarPorCedula/{cedula : \\d+}")
     @Consumes(MediaType.APPLICATION_JSON)
     public Response modificar(@PathParam("cedula") String cedula, EstudianteInfo est){
         listaEstudiante = new ArrayList<>();
@@ -142,35 +161,44 @@ public class EstudianteController {
         
         if (archivo.exists()) {
             try {
-                FileInputStream fileIS = new FileInputStream(archivo);
-                ObjectInputStream ois = new ObjectInputStream(fileIS);
-            
-                FileOutputStream fileOS = new FileOutputStream(archivoTemp);
-                ObjectOutputStream oos = new ObjectOutputStream(fileOS);
-            
-                try {
-                    while (true) {
-                        listaEstudiante = (List) ois.readObject();
-                        for (EstudianteInfo e : listaEstudiante) {
-                            if (cedula.equals(e.getCedula())) {
-                                em.datos(est);
-                                lista.add(est);
-                                oos.writeObject(lista); 
+                HashMap<String, String> errores = new HashMap();
+                
+                for (ConstraintViolation error: est.validar())
+                    errores.put(error.getPropertyPath().toString(), error.getMessage());
+                
+                if (errores.size() > 0)
+                    return Response.status(Response.Status.BAD_REQUEST).entity(errores).build();
+                else {
+                    FileInputStream fileIS = new FileInputStream(archivo);
+                    ObjectInputStream ois = new ObjectInputStream(fileIS);
+
+                    FileOutputStream fileOS = new FileOutputStream(archivoTemp);
+                    ObjectOutputStream oos = new ObjectOutputStream(fileOS);
+
+                    try {
+                        while (true) {
+                            listaEstudiante = (List) ois.readObject();
+                            for (EstudianteInfo e : listaEstudiante) {
+                                if (cedula.equals(e.getCedula())) {
+                                    em.datos(est);
+                                    lista.add(est);
+                                    oos.writeObject(lista); 
+                                }
+                                if (!cedula.equals(e.getCedula()))
+                                    oos.writeObject(listaEstudiante);
                             }
-                            if (!cedula.equals(e.getCedula()))
-                                oos.writeObject(listaEstudiante);
                         }
+                    } catch (IOException | ClassNotFoundException e) {
+                        e.printStackTrace();
+
+                        oos.close();
+                        ois.close();
+
+                        archivo.delete();
+                        archivoTemp.renameTo(archivo);
+
+                        return Response.status(Response.Status.OK).entity("Registro de " + est.getNombre() + " Modificado Exitosamente").build();
                     }
-                } catch (IOException | ClassNotFoundException e) {
-                    e.printStackTrace();
-                    
-                    oos.close();
-                    ois.close();
-                    
-                    archivo.delete();
-                    archivoTemp.renameTo(archivo);
-            
-                    return Response.status(Response.Status.OK).entity("Registro Modificado Exitosamente").build();
                 }
             } catch (IOException e) {
                 e.printStackTrace();
@@ -181,7 +209,7 @@ public class EstudianteController {
     }
     
     @DELETE
-    @Path("/eliminarPorCedula/{cedula}")
+    @Path("/eliminarPorCedula/{cedula : \\d+}")
     @Consumes(MediaType.APPLICATION_JSON)
     public Response eliminar(@PathParam("cedula") String cedula){
         listaEstudiante = new ArrayList<>();

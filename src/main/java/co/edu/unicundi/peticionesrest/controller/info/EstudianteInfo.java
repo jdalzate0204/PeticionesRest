@@ -1,57 +1,49 @@
 package co.edu.unicundi.peticionesrest.controller.info;
 
 import java.io.Serializable;
-import java.util.List;
+import java.util.*;
+import javax.validation.*;
 import javax.validation.constraints.*;
+import org.hibernate.validator.constraints.Range;
 
 /**
  *
  * @author James Daniel Alzate Rios
  * @author Paula Alejandra Guzman Cruz
  */
-public class EstudianteInfo implements Serializable{
+public class EstudianteInfo implements Serializable {
     
-    /*@NotNull
-    @Size (min = 7, max = 10)
-    @Pattern(regexp = "/^([0-9])*$/")*/
+    //@NotNull (message = "¡Se requiere la cedula!")
+    @Size (min = 7, max = 10, message = "¡Debe tener un tamaño entre 7 y 10 caracteres!")
+    @Pattern(regexp = "^\\d+$", message = "¡Solo se admiten numeros!")
     private String cedula;
     
-    /*@NotNull (message = "Por favor, ingrese el nombre")
-    @Size (min = 3, max = 20, message = "El nombre debe tener entre 3 y 20 caracteres")
-    @Pattern(regexp = "/^[a-zA-Z]*$/", message = "Nombre solo admite letras")*/
+    //@NotBlank (message = "¡Se requiere el nombre!")
+    @Size (min = 3, max = 20, message = "¡Debe tener un tamaño entre 3 y 20 caracteres!")
+    @Pattern(regexp = "^[a-zA-Z_]+( [a-zA-Z_]+)*$", message = "¡Solo se admiten letras!")
     private String nombre;
     
-    /*@NotNull (message = "Por favor, ingrese el apellido")
-    @Size (min = 3, max = 20, message = "El apellido debe tener entre 3 y 20 caracteres")
-    @Pattern(regexp = "/^[a-zA-Z]*$/", message = "Apellido solo admite letras")*/
+    //@NotBlank (message = "¡Se requiere la apellido!")
+    @Size (min = 3, max = 20, message = "¡Debe tener un tamaño entre 3 y 20 caracteres!")
+    @Pattern(regexp = "^[a-zA-Z_]+( [a-zA-Z_]+)*$", message = "¡Solo se admiten letras!")
     private String apellido;
     
-    /*@NotNull (message = "Porfavor, ingrese la edad")
-    @Min (18)
-    @Max (99)
-    @Size (max = 2, message = "La edad no debe superar los 2 caracteres")
-    @Pattern(regexp = "/^([0-9])*$/", message = "Edad solo admite numeros")*/
+    @Range (min = 18, max = 99, message = "¡Debe estar en el rango entre 18 y 99 años!")
     private Integer edad;
     
-    /*@NotNull (message = "Porfavor, ingrese el correo")
-    @Pattern (regexp = "^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$", message = "Ingrese un formato de correo valido")*/
+    //@NotBlank (message = "¡Se requiere el correo!")
+    @Pattern (regexp = "^[^@]+@[^@]+\\.[a-zA-Z]{2,}$", message = "¡Ingrese un formato valido!")
     private String correo;
     
-    /*@NotNull (message = "Porfavor, ingrese el semestre en numero")
-    @Min (1)
-    @Max (10)
-    @Size (max = 2, message = "El semestre no debe superar los 2 caracteres")
-    @Pattern(regexp = "/^([0-9])*$/", message = "Semestre solo admite numeros")*/
-    private int semestre;
+    @Range (min = 1, max = 10, message = "¡Debe estar en el rango entre 1 y 10!")
+    private Integer semestre;
     
-    /*@NotNull (message = "Porfavor, ingrese las materias")
-    @Max (5)*/
+    //No nulo (Validación personalizada)
+    @Size(min = 1, max = 5, message = "¡Debe ingresar entre 1 y 5 materias!")
     private List<String> listaMaterias;
     
-    /*@NotNull (message = "Porfavor, ingrese los numeros")
-    @Min (2)
-    @Max (7)
-    @Pattern(regexp = "/^([0-9])*$/", message = "El vector numeros solo admite numeros")*/
+    @NotNull (message = "¡Se requieren numeros!")
+    @Size (min = 2, max = 7, message = "¡Debe ingresar entre 2 y 7 numeros!")
     private int[] numeros;
 
     public EstudianteInfo() {
@@ -97,11 +89,11 @@ public class EstudianteInfo implements Serializable{
         this.correo = correo;
     } 
 
-    public int getSemestre() {
+    public Integer getSemestre() {
         return semestre;
     }
 
-    public void setSemestre(int semestre) {
+    public void setSemestre(Integer semestre) {
         this.semestre = semestre;
     }
 
@@ -121,9 +113,10 @@ public class EstudianteInfo implements Serializable{
         this.numeros = numeros;
     }
 
-    /*@Override
-    public String toString(){ //Recorrer los datos para concatenar
-        
-        return cedula + " " + nombre + " " + apellido + " " + edad + " " + correo + " " + semestre;
-    }*/
+    //Envia la intancia para validar si tiene alguna violación 
+    public Set<ConstraintViolation<EstudianteInfo>> validar(){
+        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+        Validator validator = factory.getValidator();
+        return validator.validate(this);
+    }
 }
